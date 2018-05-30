@@ -1,0 +1,28 @@
+version: "3.6"
+
+services:
+  database:
+    image: whek/sis_database
+    environment:
+      POSTGRES_USER: nodeserver
+      POSTGRES_PASSWORD: nodeserverpassword
+      POSTGRES_DB: datastorage
+    volumes:
+      - /app/data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    deploy:
+      placement:
+        constraints: [node.hostname == pimanager1]
+
+  api:
+    image: whek/sis_node-server
+    #build: .
+    command: npm start
+    volumes:
+      #- .:/app
+      - /app/node_modules
+    ports:
+      - 3000:3000
+    depends_on:
+      - database

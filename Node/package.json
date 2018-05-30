@@ -1,0 +1,17 @@
+{
+  "name": "Sis-node-server",
+  "version": "1.2.0",
+  "description": "Api for sensor data and device management",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon -L server.js"
+  },
+  "keywords": [],
+  "author": "Wesley de Hek",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "pg": "^7.4.3",
+    "nodemon": "^1.9.2"
+  }
+}
