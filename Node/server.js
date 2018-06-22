@@ -7,7 +7,15 @@ var jsonParser = bodyParser.json();
 
 app.all('*', function(req, res, next) {
    res.header('Content-Type', 'application/json');
+   res.header('Access-Control-Allow-Origin', '*');
    next();
+});
+
+app.use(function(req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    next();
 });
 
 //Setting routing:
@@ -24,6 +32,7 @@ router.route('/data/:id/ozone').get(dataController.ozone);
 router.route('/data/:id/carbon_monoxide').get(dataController.carbonMonoxide);
 router.route('/data/:id/carbon_dioxide').get(dataController.carbonDioxide);
 router.route('/data/:id/nitrogen_dioxide').get(dataController.nitrogenOxide);
+router.route('/data/:id/current_data').get(dataController.currentData);
 
 router.route('/data/:id/temperature').post(dataController.temperature);
 router.route('/data/:id/humidity').post(dataController.humidity);
@@ -38,9 +47,10 @@ router.route('/data/insert').post(dataController.insert);
 //Device routes:
 router.route('/device/id').get(deviceController.id);
 router.route('/device/list').get(deviceController.list);
-router.route('/device/listAll').get(deviceController.listAll);
-router.route('/device/joinToken').get(deviceController.getJoinToken);
+router.route('/device/list_unregistered').get(deviceController.listUnregistered);
+router.route('/device/jointoken').get(deviceController.getJoinToken);
 router.route('/device/:id/sensors').get(deviceController.listSensors);
+router.route('/device/:id').get(deviceController.device);
 
 router.route('/device/register').post(deviceController.register);
 router.route('/device/:id/name').post(deviceController.name);

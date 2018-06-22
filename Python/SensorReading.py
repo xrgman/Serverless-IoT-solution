@@ -16,7 +16,7 @@ deviceId = None
 temperaturevalue = None
 humidityvalue = None
 pm25value = None
-pm10value = None  
+pm10value = None
 ozonevalue = None
 carbonmonoxidevalue = None
 carbondioxidevalue = None
@@ -76,16 +76,16 @@ def Initialize():
     global hostname, deviceId, role, joinToken
 
     #fetching hostname:
-    # hostname  = socket.gethostname()
-    # role = sys.argv[1]
-    # joinToken = sys.argv[2] if len(sys.argv) == 3 else None
-    hostname = os.environ["HOSTNAME"]
-    role = os.environ["ROLE"]
-    joinToken = os.environ["JOINTOKEN"]
+    hostname  = socket.gethostname()
+    role = sys.argv[1]
+    joinToken = sys.argv[2] if len(sys.argv) == 3 else None
+    # hostname = os.environ["HOSTNAME"]
+    # role = os.environ["ROLE"]
+    # joinToken = os.environ["JOINTOKEN"]
 
     # print("devicename: " + hostname)
     # print("role: " + role)
-    print("save: " + str(joinToken) if joinToken else "")
+    # print("save: " + str(joinToken) if joinToken else "")
 
     #Fetching deviceId
     deviceId = FetchDeviceId()
@@ -110,6 +110,8 @@ def ReadSensors():
     if(hpma115S0.readParticleMeasurement()):
         pm25value = hpma115S0._pm2_5
         pm10value = hpma115S0._pm10
+
+
     return
 
 def FetchJsonString():

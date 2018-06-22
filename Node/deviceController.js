@@ -10,8 +10,9 @@ module.exports = {
     removeSensor: removeSensor,
     id: fetchDeviceId,
     list: fetchDevices,
-    listAll: fetchAllDevices,
-    listSensors: fetchDeviceSensors
+    listUnregistered: fetchUnregisteredDevices,
+    listSensors: fetchDeviceSensors,
+    device: fetchDevice
 };
 
 function registerDevice(req, res) {
@@ -71,7 +72,7 @@ function registerJoinToken(req, res) {
                 });
             }
             else {
-                res.writeHead();
+                res.writeHead(400);
                 res.end('{ "error": "Invalid device_id"}');
             }
         });
@@ -249,6 +250,40 @@ function removeSensor(req, res) {
     }
 }
 
+function fetchDevice(req, res) {
+    if(!isNaN(req.params.id)) {
+        var deviceId = req.params.id;
+
+        helper.checkDeviceId(req.app.pool, deviceId).then(function (result) {
+            if(result) {
+
+                //Checking if device has this sensor:
+               query = {
+                   text: 'SELECT * FROM tbl_devices WHERE id = $1',
+                   values: [deviceId]
+               }
+
+               req.app.pool.query(query, (err, queryRes) => {
+                   if (err) {
+                       res.writeHead(500);
+                       res.end('{ "error": ' + err.stack + '}');
+                   } else {
+                       res.send(JSON.stringify(queryRes.rows[0]));
+                   }
+                });
+            }
+            else {
+                res.writeHead();
+                res.end('{ "error": "Invalid device_id"}');
+            }
+        });
+    }
+    else { //Invalid body
+        res.writeHead(400);
+        res.end('{ "error": "Invalid body, expected a valid jointoken and a device id number"}');
+    }
+}
+
 function fetchDeviceId(req, res) {
 
     var hostname = req.query.hostname;
@@ -277,7 +312,7 @@ function fetchJoinToken(req, res) {
      req.app.pool.query(queryText, (err, queryRes) => {
        if (err) {
            res.writeHead(500);
-           res.end("{ \"reason\": \"" + err.stack + "\"}");
+           res.end("{ \"error\": \"" + err.stack + "\"}");
        } else {
            if(!queryRes.rows[0]) {
                res.writeHead(404);
@@ -306,9 +341,9 @@ function fetchDevices(req, res) {
     });
 }
 
-function fetchAllDevices(req, res) {
+function fetchUnregisteredDevices(req, res) {
 var query = {
-        text: 'SELECT * FROM tbl_devices'
+        text: 'SELECT * FROM tbl_devices WHERE name is null'
     }
 
     req.app.pool.query(query, (err, queryRes) => {

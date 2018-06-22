@@ -9,7 +9,8 @@ module.exports = {
     ozone: fetchOzoneData,
     carbonMonoxide: fetchCarbonMonoxideData,
     carbonDioxide: fetchCarbonDioxideData,
-    nitrogenOxide: fetchNitrogenOxideData
+    nitrogenOxide: fetchNitrogenOxideData,
+    currentData: fetchCurrentData
 };
 
 var table = Object.freeze({
@@ -198,6 +199,35 @@ async function fetchNitrogenOxideData(req, res) {
     }
 }
 
+async function fetchCurrentData(req, res) {
+    var deviceId = req.params.id;
+
+    if(!isNaN(deviceId)) {
+
+        //Checking if the device id is valid:
+        helper.checkDeviceId(req.app.pool, deviceId).then(async function (result) {
+            if (result) {
+
+                var temperature = await fetchCurrentDataFromTable(req.app.pool, deviceId, 'tbl_datatemperature');
+                var humidity = await fetchCurrentDataFromTable(req.app.pool, deviceId, 'tbl_datahumidity');
+                var pm25 = await fetchCurrentDataFromTable(req.app.pool, deviceId, 'tbl_datafinedust25');
+                var pm10 = await fetchCurrentDataFromTable(req.app.pool, deviceId, 'tbl_datafinedust10');
+
+                res.send('{ "temperature": ' + temperature.value +
+                    ', "humidity": ' + humidity.value +
+                    ', "fineDust25": ' + pm25.value +
+                    ', "fineDust10": ' + pm10.value + ' }');
+            }
+            else {
+               return '{ "error": "Invalid device id."}';
+            }
+        });
+    }
+    else {
+        return '{ "error": "Invalid deviceId, a device id can only be a number.}';
+    }
+}
+
 async function fetchSensorData(db, deviceId, body, tableName) {
     if(!isNaN(deviceId)) {
 
@@ -258,5 +288,20 @@ function fetchDataQuery(deviceId, from, to, tableName) {
             text: queryText + ' AND created >= $2 AND created <= $3',
             values: [deviceId, from, to]
         }
+    }
+}
+
+async function fetchCurrentDataFromTable(db, deviceId, tableName) {
+    var query = {
+        text: 'SELECT value FROM ' + tableName + ' WHERE deviceid = $1 ORDER BY created DESC limit 1',
+        values: [deviceId]
+    };
+
+    //Requesting sensor data:
+    try {
+        var result = await db.query(query);
+        return result.rows[0];
+    } catch(e) {
+        return '{ "error": ' + err.stack + ' }';
     }
 }

@@ -7,8 +7,6 @@ services:
       POSTGRES_USER: nodeserver
       POSTGRES_PASSWORD: nodeserverpassword
       POSTGRES_DB: datastorage
-    volumes:
-      - /app/data:/var/lib/postgresql/data
     ports:
       - 5432:5432
     deploy:
@@ -17,12 +15,15 @@ services:
 
   api:
     image: whek/sis_node-server
-    #build: .
     command: npm start
-    volumes:
-      #- .:/app
-      - /app/node_modules
+    restart: always
     ports:
       - 3000:3000
+    volumes:
+      - /app/node_modules
     depends_on:
       - database
+    links:
+      - database
+
+# docker service create -e POSTGRES_PASSWORD=nodeserverpassword -e POSTGRES_USER=nodeserver -e POSTGRES_DB=datastorage  -p 5432:5432 --name data  whek/sis_database
